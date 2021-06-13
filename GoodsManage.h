@@ -1,67 +1,11 @@
-#include<iostream>
+#pragma once
+
+#include "Goods.h"
+#include "Account.h"
 #include<fstream>
-#include<string>
-#include<iomanip>
-#include<windows.h>
 #include<conio.h>
+
 using namespace std;
-
-enum GoodsType//商品类别
-{
-	Food = 1,//食品
-	Cosmetic,//化妆品
-	Commodity,//日用品
-	Drink//饮料
-};
-
-struct Account//账号密码
-{
-	string accountnum;//账号
-	string password;//密码
-	int wrongtimes;
-	Account* next;
-	Account();//构造函数
-	void Writein();//将账号密码写入文件
-};
-
-Account::Account() {
-	wrongtimes = 0;
-}//构造函数，将wrongtimes初始化为0
-
-void Account::Writein() {
-
-}
-
-struct Date//日期
-{
-	int year;
-	int month;
-	int day;
-};
-
-struct Goods//商品基本信息
-{
-	string code;//商品编号
-	string name;//商品名称
-	string brand;//生产厂家
-	double price;//商品价格
-	int num;//商品数量
-	GoodsType type;//商品类别
-	Date date;//入库时间
-	int expiradate;//保质期
-	Goods* next;
-	void Goodprint();//输出货物相关信息
-};
-
-void Goods::Goodprint() {
-	cout << setiosflags(ios::left) << setw(10) << "编号" << setw(16) << "名称" << setw(10) << "生产厂家" << setw(10) << "价格" << setw(10) <<
-		"商品类别" << setw(10) << "数量" << setw(10) << "入库时间" << endl;
-	cout << setiosflags(ios::left) << setw(10) << code << setw(16) << name;
-	cout << setw(10) << brand << setw(10) << price << setw(10) << type;
-	cout << setw(16) << num << date.year << "/" << date.month << "/" << date.day;
-	cout << setw(10) << expiradate;
-}
-
 
 class GoodsManage//商品管理
 {
@@ -84,27 +28,23 @@ public:
 	void SellGoodsInfo();//出售商品信息
 	void SaveGoodsInfo();//保存商品信息
 	void Coutexpired();//输出商品过期日期
+	void LowRemind();//低库存提醒
+	void LowDateRemind();//保质期提醒
 private:
 	int amount;//商品量
 	int DeleteAmount;
 	Goods* head;
 	Goods* DeleteHead;
-	Account* hd = new Account;
-	Account* ed;
 };
 
 GoodsManage::GoodsManage()//定义构造函数
 {
 	amount = 0;
 	DeleteAmount = 0;
-	head = new Goods;
+	head = new Goods;//头结点不带data
 	head->next = NULL;
-	hd = new Account;
-	hd->next = NULL;
-	DeleteHead = new Goods;
+	DeleteHead = new Goods;//头结点不带data
 	DeleteHead->next = NULL;
-	ed = new Account;
-	ed->next = NULL;
 }
 
 //GoodsManage::~GoodsManage()//定义析构函数
@@ -139,112 +79,152 @@ void GoodsManage::DisplayMainMenu()//定义主菜单函数
 	cout << " ┋                                                                ┋\n";
 	cout << " ┋                        【保质期查询】…(k)                     ┋\n";
 	cout << " ┋                                                                ┋\n";
-	cout << " ┋                        【添加账号】…(l)                       ┋\n";
+	cout << " ┋                        【低库存提醒】…(l)                     ┋\n";
 	cout << " ┋                                                                ┋\n";
-	cout << " ┋                        【删除账号】…(m)                       ┋\n";
+	cout << " ┋                        【添加账号】…(m)                       ┋\n";
 	cout << " ┋                                                                ┋\n";
-	cout << " ┋                        【更改密码】…(n)                       ┋\n";
+	cout << " ┋                        【删除账号】…(n)                       ┋\n";
 	cout << " ┋                                                                ┋\n";
-	cout << " ┋                          退出系统…(o)                         ┋\n";
+	cout << " ┋                        【更改密码】…(o)                       ┋\n";
+	cout << " ┋                                                                ┋\n";
+	cout << " ┋                          退出系统…(p)                         ┋\n";
 	cout << "\n                      请输入你要进行的操作编号:";
 }
 
-int GoodsManage::Verification()//定义账号验证函数
-{
-	string num;
-	char password[30];
-	Account* temp = hd;
-	char ch;
-	int i, wrot = 0;
-	cout << "请输入账号密码（最多30位）" << endl;
-	cout << "请输入账号：";
-	cin >> num;
-	cout << "请输入密码：";
-	for (i = 0; i < 29; i++) {
-		ch = _getch();//对于vs2019来说前面需要加一个小下划线，对于其他的IDE可以去掉
-		if (ch == 13) {
-			break;
-		}//若为回车则结束
-		else if (ch == 8) {
-			if (i > 0) {
-				cout << ch;
-				cout << ' ';
-				cout << ch;
-				i-=2;
-			}
-			else { i--; }
-		}//若为退格符如何处理
-		else {
-			password[i] = ch;
-			cout << '*';
-		}//为密码正文，则输出'*'
-	}
-	password[i] = '\0';
-	cout << endl;
-	if (num != "root") {
-		while (temp->next != NULL) {
-			if (temp->accountnum == num) {
-				if (password == temp->password) {
-					cout << "验证通过" << endl;
-					return 1;
-				}
-				else {
-					if (temp->wrongtimes == 3) {
-						cout << "输入错误三次，该账号已被销毁，请联系管理员重新注册" << endl;
-						break;
-					}
-					temp->wrongtimes++;
-					cout << "密码错误" << endl;
-					return 0;
-				}
-			}
-			temp = temp->next;
-		}
-		cout << "未找到该账号" << endl;
-		return 0;
-	}//如果不是root账号
-	else {
-		string t = "password";
-		if (password == t) {
-			cout << "you are right" << endl;
-			return 1;
-		}
-		else {
-			if (wrot == 3) {
-				cout << "输入错误三次！！！" << endl;
-				exit(1);
-			}
-			wrot++;
-		}
-	}
-	return 0;
-}
-
-void  GoodsManage::Addaccount()//定义添加账号函数
-{
-	Account* temp = hd, * p;
-	while (temp->next != NULL) {
-		temp = temp->next;
-	}//找到最尾部
-	p = new Account;
-	cout << "请输入要添加的账号：";
-	cin >> p->accountnum;
-	cout << "请输入添加账号的密码：";
-	cin >> p->password;
-	cout << "成功添加！！！" << endl;
-	Sleep(1000);
-	system("cls");
-}
-
-void GoodsManage::Subaccount()//定义删除账号函数
-{
-
-}
-
-void GoodsManage::Changeaccount()
-{
-
-}
+//int GoodsManage::Verification()//定义账号验证函数
+//{
+//	string num;
+//	char password[30];
+//	Account* temp = hd;
+//	char ch;
+//	int i;
+//	cout << "请输入账号密码（最多30位）" << endl;
+//	cout << "请输入账号：";
+//	cin >> num;
+//	cout << "请输入密码：";
+//	for (i = 0; i < 29; i++) {
+//		ch = _getch();//对于vs2019来说前面需要加一个小下划线，对于其他的IDE可以去掉
+//		if (ch == 13) {
+//			break;
+//		}//若为回车则结束
+//		else if (ch == 8) {
+//			if (i > 0) {
+//				cout << ch;
+//				cout << ' ';
+//				cout << ch;
+//				i -= 2;
+//			}
+//			else { i--; }
+//		}//若为退格符如何处理
+//		else {
+//			password[i] = ch;
+//			cout << '*';
+//		}//为密码正文，则输出'*'
+//	}
+//	password[i] = '\0';//字符串尾部终止符
+//	cout << endl;
+//	if (num != "admin") {
+//		while (temp->next != NULL) {
+//			if (temp->accountnum == num) {
+//				if (password == temp->password) {
+//					cout << "验证通过" << endl;
+//					return 1;
+//				}
+//				else {
+//					if (temp->wrongtimes == 3) {
+//						cout << "输入错误三次，该账号已被销毁，请联系管理员重新注册" << endl;
+//						Account* tp = hd;
+//						while (tp->next != temp) {
+//							tp = tp->next;
+//						}
+//						tp->next = temp->next;
+//						delete temp;
+//						break;
+//					}
+//					temp->wrongtimes++;
+//					cout << "密码错误" << endl;
+//					return 0;
+//				}
+//			}
+//			temp = temp->next;
+//		}
+//		if (temp->next == NULL) {
+//			cout << "未找到该账号" << endl;
+//		}
+//		return 0;
+//	}//如果不是root账号
+//	else {
+//		string t;
+//		int wrot = 0;//记录错误次数
+//		cout << "1111111111:";
+//		cin >> t;
+//		if (password == t) {
+//			cout << "you are right" << endl;
+//
+//			return 1;
+//		}
+//		else {
+//			if (wrot == 3) {
+//				cout << "输入错误三次！！！" << endl;
+//				exit(1);
+//			}
+//			wrot++;
+//		}
+//	}
+//	return 0;
+//}
+//
+//void  GoodsManage::Addaccount()//定义添加账号函数
+//{
+//	Account* temp = hd, * p;
+//	while (temp->next != NULL) {
+//		temp = temp->next;
+//	}//找到最尾部
+//	p = new Account;
+//	cout << "请输入要添加的账号：";
+//	cin >> p->accountnum;
+//	cout << "请输入添加账号的密码：";
+//	cin >> p->password;
+//	temp->next = p;
+//	p->next = NULL;
+//	cout << "成功添加！！！" << endl;
+//	Sleep(1000);
+//	system("cls");
+//}
+//
+//void GoodsManage::Subaccount()//定义删除账号函数
+//{
+//	string acot;//删除的账号
+//	cout << "请输入要删除的账号：" << endl;
+//	cin >> acot;
+//	Account* p = hd;//找寻要删除的账号
+//	Account* temp;
+//	//有缺陷
+//	while (p->next != NULL) {
+//		if (p->next->accountnum == acot) {
+//			temp = p->next;
+//			p->next = temp->next;
+//			delete temp;//删除节点
+//		}
+//	}
+//}
+//
+//void GoodsManage::Changeaccount()//定义改变密码操作
+//{
+//	string acot;//要更改的账号
+//	cout << "请输入要更改的账号：" << endl;
+//	cin >> acot;
+//	Account* p = hd;//找寻要更改的账号
+//	while (p->next != NULL) {
+//		if (p->accountnum == acot) {
+//			string temp;
+//			cout << "请输入新的密码：" << endl;
+//			cin >> temp;
+//			p->password = temp;//更改密码
+//		}
+//	}
+//}
+//TODO将账号验证与货物管理分离
 
 void GoodsManage::AddGoodsInfo()//定义添加商品信息函数
 {
@@ -329,13 +309,14 @@ void GoodsManage::DisplayGoodsInfo()//定义商品信息浏览函数
 	Goods* p = head;
 	cout << "          ☆☆☆☆☆☆现在进行商品信息的浏览☆☆☆☆☆☆          " << endl;
 	cout << setiosflags(ios::left) << setw(10) << "编号" << setw(16) << "名称" << setw(10) << "生产厂家" << setw(10) << "价格" << setw(10) <<
-		"商品类别" << setw(10) << "数量" << setw(10) << "入库时间" << setw(10) << "保质期" << endl;
+		"商品类别" << setw(10) << "数量" << setw(16) << "入库时间" << setw(10) << "保质期" << endl;
 	while (p->next != NULL)//直到p指向链表中最后一个结点
 	{
 		p = p->next;
 		cout << setiosflags(ios::left) << setw(10) << p->code << setw(16) << p->name;
 		cout << setw(10) << p->brand << setw(10) << p->price << setw(10) << p->type;
-		cout << setw(10) << p->num << p->date.year << "/" << p->date.month << "/" << p->date.day << setw(10) << p->expiradate << endl;
+		cout << setw(10) << p->num << setw(4) << p->date.year << "/" << setw(2) << p->date.month << "/" << setw(2) << p->date.day;
+		cout << setw(6) << "" << setw(10) << p->expiradate << endl;
 	}
 	cout << endl;
 	cout << "……信息统计完毕……" << endl;
@@ -343,8 +324,6 @@ void GoodsManage::DisplayGoodsInfo()//定义商品信息浏览函数
 	getchar();
 	getchar();
 }
-
-
 
 void GoodsManage::SearchByCode()//按照商品编号查找商品信息
 {
@@ -363,6 +342,7 @@ void GoodsManage::SearchByCode()//按照商品编号查找商品信息
 		if (p->code == FoundCode)//找到相应编号的商品
 		{
 			flag = 1;
+			p->HeadPrint();
 			p->Goodprint();
 			break;
 		}
@@ -395,6 +375,7 @@ void GoodsManage::SearchByName()//按照商品名称查找商品信息
 		if (p->name == FoundName)//找到相应名称的商品
 		{
 			flag = 1;
+			p->HeadPrint();
 			p->Goodprint();
 			break;
 		}
@@ -429,22 +410,26 @@ void GoodsManage::SearchByType()//按照商品类别查找商品信息
 		if (FoundType == 1 && p->type == Food)
 		{
 			flag = 1;
+			p->HeadPrint();
 			p->Goodprint();
 		}
 
 		else if (FoundType == 2 && p->type == Cosmetic)
 		{
 			flag = 1;
+			p->HeadPrint();
 			p->Goodprint();
 		}
 		else if (FoundType == 3 && p->type == Commodity)
 		{
 			flag = 1;
+			p->HeadPrint();
 			p->Goodprint();
 		}
 		else if (FoundType == 4 && p->type == Drink)
 		{
 			flag = 1;
+			p->HeadPrint();
 			p->Goodprint();
 		}
 	}
@@ -472,10 +457,10 @@ void GoodsManage::SearchByBrand()//按照生产厂家查找商品信息
 	cin >> FoundBrand;
 	while (p->next != NULL)
 	{
-
 		p = p->next;
 		if (p->brand == FoundBrand)//找到相应生产厂家所对应的商品
 		{
+			if (flag == 0) { p->HeadPrint(); }
 			flag = 1;
 			p->Goodprint();
 		}
@@ -529,6 +514,8 @@ void GoodsManage::EditGoodsInfo()//定义编辑商品信息函数
 				cin >> p->num;
 				cout << "请输入入库时间（年/月/日）：";
 				cin >> p->date.year >> p->date.month >> p->date.day;
+				cout << "请输入保质期：";
+				cin >> p->expiradate;
 				cout << "修改成功！" << endl;
 			}
 			else cout << "取消成功！" << endl;
@@ -554,27 +541,25 @@ void GoodsManage::EditGoodsInfo()//定义编辑商品信息函数
 	getchar();
 }
 
-
 void GoodsManage::DeleteGoodsInfo()//定义商品信息删除函数
 {
 	Goods* q = head, * p, * tail = DeleteHead;
 	p = new Goods;
 	char c;
 	string Dename;
-//	bool flag = 0;
+	//	bool flag = 0;
 	while (tail->next != NULL)//令tail指向链表中最后一个节点
 		tail = tail->next;
 	cout << "          ☆☆☆☆☆☆现在进行商品信息的删除☆☆☆☆☆☆          " << endl;
 	do
 	{
-
 		cout << "请输入您要删除的商品名称：";
 		cin >> Dename;
 		while (q->next != NULL && q->next->name != Dename)//直到q指向链表中最后一个节点或者找到相应名称的商品时跳出循环
 			q = q->next;
 		if (q->next != NULL)//找到相应名称的商品
 		{
-//			flag = 1;
+			//			flag = 1;
 			cout << "确认删除吗？<y/n>";
 			cin >> c;
 			while (c != 'y' && c != 'n')
@@ -594,23 +579,20 @@ void GoodsManage::DeleteGoodsInfo()//定义商品信息删除函数
 				cout << "删除成功！！" << endl;
 			}
 			else cout << "取消成功！！！" << endl;
-
 		}
 		else
 		{
 			cout << "对不起，您删除的商品不存在！！！" << endl;
-
 		}
 		cout << "您想要继续删除吗？(y/n):";
 		cin >> c;
-		while (c != 'y' && c != 'n')
+		while (c != 'y' && c != 'n') 
 		{
 			cout << "指令错误！！！<请输入y/n>:" << endl;
 			cout << "您想要继续删除吗？(y/n):";
 			cin >> c;
 		}
 		q = head;//令q指向链表中第一个结点再次搜索相应名称的商品
-
 	} while (c == 'y');
 	cout << endl;
 	cout << "……信息删除完毕……" << endl;
@@ -618,7 +600,6 @@ void GoodsManage::DeleteGoodsInfo()//定义商品信息删除函数
 	getchar();
 	getchar();
 }
-
 
 void GoodsManage::SellGoodsInfo()//定义商品出库函数
 {
@@ -639,6 +620,8 @@ void GoodsManage::SellGoodsInfo()//定义商品出库函数
 			p = p->next;
 		if (p->name == SellName)
 		{
+			//如果过期，则不出售
+			//TODO
 			flag = 1;
 			p->Goodprint();
 			cout << "\n确认出售吗？<y/n>";
@@ -650,7 +633,6 @@ void GoodsManage::SellGoodsInfo()//定义商品出库函数
 			}
 			if (c == 'y')
 			{
-
 				cout << "请输入出售的商品数量：";
 				cin >> sellNum;
 				if (sellNum <= p->num)//库存量充足
@@ -676,7 +658,6 @@ void GoodsManage::SellGoodsInfo()//定义商品出库函数
 		if (flag == 0)
 		{
 			cout << "对不起，您出售的货物不存在！！" << endl;
-
 		}
 		cout << "您想要继续出售吗？(y/n):";
 		cin >> c;
@@ -692,9 +673,7 @@ void GoodsManage::SellGoodsInfo()//定义商品出库函数
 	cout << "……按任意键返回主菜单……" << endl;
 	getchar();
 	getchar();
-
 }
-
 
 void GoodsManage::SaveGoodsInfo()//定义商品信息保存函数
 {
@@ -705,20 +684,19 @@ void GoodsManage::SaveGoodsInfo()//定义商品信息保存函数
 	{
 		cerr << "打开文件<货物信息.txt>失败！！！" << endl;
 	}
-	cout << setiosflags(ios::left) << setw(10) << "编号" << setw(16) << "名称" << setw(10) << "生产厂家" << setw(10) << "价格" << setw(10) <<
-		"商品类别" << setw(10) << "数量" << setw(10) << "入库时间" << endl;
+	p->HeadPrint();
 	output << "商品总量为: " << amount << "\n";
 	output << setiosflags(ios::left) << setw(10) << "编号" << setw(16) << "名称" << setw(10) << "生产厂家" << setw(10) << "价格" << setw(10) <<
-		"商品类别" << setw(10) << "数量" << setw(10) << "入库时间" << endl;
+		"商品类别" << setw(10) << "数量" << setw(16) << "入库时间" << setw(10) << "保质期" << endl;
 	while (p->next != NULL)
 	{
 		p = p->next;
-		cout << setiosflags(ios::left) << setw(10) << p->code << setw(16) << p->name;
-		cout << setw(10) << p->brand << setw(10) << p->price << setw(10) << p->type;
-		cout << setw(10) << p->num << p->date.year << "/" << p->date.month << "/" << p->date.day << endl;
-		output << setiosflags(ios::left) << setw(10) << p->code << setw(16) << p->name;//在文件中显示相应商品信息
+		p->Goodprint();
+		//在文件中显示相应商品信息
+		output << setiosflags(ios::left) << setw(10) << p->code << setw(16) << p->name;
 		output << setw(10) << p->brand << setw(10) << p->price << setw(10) << p->type;
-		output << setw(10) << p->num << p->date.year << "/" << p->date.month << "/" << p->date.day << endl;
+		output << setw(10) << p->num << setw(4) << p->date.year << "/" << setw(2) << p->date.month << "/" << setw(2) << p->date.day;
+		output << setw(6) << "" << setw(10) << p->expiradate << endl;
 	}
 	cout << endl;
 	cout << "成功将货物信息保存到<货物信息.txt>" << endl;
@@ -729,74 +707,36 @@ void GoodsManage::SaveGoodsInfo()//定义商品信息保存函数
 	output.close();//关闭输出文件
 }
 
-
 void GoodsManage::Coutexpired()//输出商品过期日期
 {
 
 }
 
-int main()//主函数
+void GoodsManage::LowRemind()//低库存提醒
 {
-	char c;
-	int i = 0;
-	bool flag = 0;
-	GoodsManage bm;//定义GoodsManage类对象
-	//控制窗口大小颜色
-	system("mode con cols=100 lines=34");
-	system("color E0");//淡黄底黑字
-	while (bm.Verification() != 1) { Sleep(1000); system("cls"); }//验证账号
-//	cout << endl << endl << endl << endl << endl << endl << "                  欢迎使用库存管理系统......系统正在加载中";
-//	Sleep(2000);//人为sleep
-	system("cls");//清屏
-	bm.DisplayMainMenu();
-	for (;;)
-	{
-		do{
-			cin >> c;
-			if (c >= 'a' && c <= 'o')//判断用户输入编号是否存在
-				flag = 1;
-			else
-			{
-				cout << "您输入的编号不存在！" << endl;
-				cout << "请选择相应的数字进行操作:" << endl;
+	//当库存低与10的时候就提醒，每一次查找后就提醒低库存
+	cout << "请输入货物数量" << endl;
+	int value, flag = 0;
+	cin >> value;
+	Goods* q = head->next;
+	while (q != NULL) {
+		if (q->num <= value) {
+			if (flag == 0) {
+				q->HeadPrint();
 			}
-		} while (flag == 0);//输入编号存在时跳出循环进行相应操作
-		system("cls");//清屏
-		switch (c)
-		{
-		case'a':bm.AddGoodsInfo();
-			break;
-		case'b':bm.EditGoodsInfo();
-			break;
-		case'c':bm.DeleteGoodsInfo();
-			break;
-		case'd':bm.SearchByCode();
-			break;
-		case'e':bm.SearchByName();
-			break;
-		case'f':bm.SearchByType();
-			break;
-		case'g':bm.SearchByBrand();
-			break;
-		case'h':bm.SellGoodsInfo();
-			break;
-		case'i':bm.DisplayGoodsInfo();
-			break;
-		case'j':bm.SaveGoodsInfo();
-			break;
-		case'k':bm.Coutexpired();
-			break;
-		case'l':bm.Addaccount();
-			break;
-		case'm':bm.Subaccount();
-			break;
-		case'n':bm.Changeaccount();
-			break;
-		case'o':exit(0);
-			break;
+			flag = 1;
+			q->Goodprint();
 		}
-		system("cls");
-		bm.DisplayMainMenu();
+		q = q->next;
 	}
-	return 0;
+	cout << endl;
+	cout << "……低库存提醒完毕……" << endl;
+	cout << "……按任意键返回主菜单……" << endl;
+	getchar();
+	getchar();
+}
+
+void GoodsManage::LowDateRemind()//保质期提醒
+{
+	//TODO
 }
