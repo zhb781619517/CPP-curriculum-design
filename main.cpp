@@ -1,6 +1,4 @@
-﻿#include<iomanip>
-#include<windows.h>
-#include<conio.h>
+﻿#include<windows.h>
 #include "GoodsManage.h"
 #include "Account.h"
 #include "Date.h"
@@ -13,12 +11,12 @@ int main()//主函数
 	char c;
 	int i = 0;
 	bool flag = 0;
-	Account* pm;//定义Account类对象
+	Account pm;//定义Account类对象
 	GoodsManage bm;//定义GoodsManage类对象
 	//控制窗口大小颜色
 	system("mode con cols=100 lines=36");
 	system("color E0");//淡黄底黑字
-	while (bm.Verification() != 1) { Sleep(1000); system("cls"); }//验证账号
+	while (pm.Verification() != 1) { Sleep(1000); system("cls"); }//验证账号
 //	cout << endl << endl << endl << endl << endl << endl << "                  欢迎使用库存管理系统......系统正在加载中";
 //	Sleep(2000);//人为sleep
 	system("cls");//清屏
@@ -58,19 +56,23 @@ int main()//主函数
 			break;
 		case'j':bm.SaveGoodsInfo();
 			break;
-		case'k':bm.Coutexpired();
+		case'k':bm.DateRemind();
 			break;
-		case'l':bm.LowRemind();
+		case'l':bm.GoodsRemind();
 			break;
-		case'm':bm.Addaccount();
+		case'm':pm.Addaccount();
 			break;
-		case'n':bm.Subaccount();
+		case'n':pm.Subaccount();
 			break;
-		case'o':bm.Changeaccount();
+		case'o':pm.Changeaccount();
 			break;
 		case'p':exit(0);
 			break;
 		}
+		//TODO
+		//保质期不足3日提醒，存货量不足10提醒
+		bm.LowDateRemind();
+		bm.LowGoodsRemind();
 		system("cls");
 		bm.DisplayMainMenu();
 	}

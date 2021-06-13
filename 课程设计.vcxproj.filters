@@ -18,6 +18,15 @@
     <ClCompile Include="main.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="Account.cpp">
+      <Filter>头文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Goods.cpp">
+      <Filter>头文件</Filter>
+    </ClCompile>
+    <ClCompile Include="GoodsManage.cpp">
+      <Filter>头文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Goods.h">
