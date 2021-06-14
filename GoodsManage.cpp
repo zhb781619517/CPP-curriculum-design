@@ -4,7 +4,6 @@
 #include<fstream>
 #include<conio.h>
 
-
 GoodsManage::GoodsManage()//定义构造函数
 {
 	amount = 0;

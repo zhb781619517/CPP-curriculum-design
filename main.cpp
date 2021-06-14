@@ -13,6 +13,8 @@ int main()//主函数
 	bool flag = 0;
 	Account pm;//定义Account类对象
 	GoodsManage bm;//定义GoodsManage类对象
+	//TODO
+	//读入之前存储过的Account
 	//控制窗口大小颜色
 	system("mode con cols=100 lines=36");
 	system("color E0");//淡黄底黑字
@@ -25,7 +27,7 @@ int main()//主函数
 	{
 		do{
 			cin >> c;
-			if (c >= 'a' && c <= 'o')//判断用户输入编号是否存在
+			if (c >= 'a' && c <= 'p')//判断用户输入编号是否存在
 				flag = 1;
 			else
 			{
@@ -67,10 +69,11 @@ int main()//主函数
 		case'o':pm.Changeaccount();
 			break;
 		case'p':exit(0);
+			//SaveAccount
 			break;
 		}
 		//TODO
-		//保质期不足3日提醒，存货量不足10提醒
+		//保质期不足3日提醒，存货量不足10提醒，若没有满足条件，则不提醒
 		bm.LowDateRemind();
 		bm.LowGoodsRemind();
 		system("cls");
