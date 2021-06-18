@@ -13,4 +13,3 @@ void Goods::Goodprint() {
 	cout << setw(10) << num << setw(4) << date.year << "/" << setw(2) << date.month << "/" << setw(2) << date.day;
 	cout << setw(6) << "" << setw(10) << expiradate << endl;
 }
-

@@ -1,8 +1,4 @@
-#include "Goods.h"
-#include "Account.h"
-#include "GoodsManage.h"
-#include<fstream>
-#include<conio.h>
+#include"GoodsManage.h"
 
 GoodsManage::GoodsManage()//定义构造函数
 {
@@ -164,10 +160,11 @@ void GoodsManage::DisplayGoodsInfo()//定义商品信息浏览函数
 	while (p->next != NULL)//直到p指向链表中最后一个结点
 	{
 		p = p->next;
-		cout << setiosflags(ios::left) << setw(10) << p->code << setw(16) << p->name;
-		cout << setw(10) << p->brand << setw(10) << p->price << setw(10) << p->type;
-		cout << setw(10) << p->num << setw(4) << p->date.year << "/" << setw(2) << p->date.month << "/" << setw(2) << p->date.day;
-		cout << setw(6) << "" << setw(10) << p->expiradate << endl;
+		p->Goodprint();
+		//cout << setiosflags(ios::left) << setw(10) << p->code << setw(16) << p->name;
+		//cout << setw(10) << p->brand << setw(10) << p->price << setw(10) << p->type;
+		//cout << setw(10) << p->num << setw(4) << p->date.year << "/" << setw(2) << p->date.month << "/" << setw(2) << p->date.day;
+		//cout << setw(6) << "" << setw(10) << p->expiradate << endl;
 	}
 	cout << endl;
 	cout << "……信息统计完毕……" << endl;
@@ -534,37 +531,46 @@ void GoodsManage::SaveGoodsInfo()//定义商品信息保存函数
 {
 	Goods* p = head;
 	cout << "          ☆☆☆☆☆☆现在进行商品信息的保存☆☆☆☆☆☆          " << endl;
-	ofstream output("货物信息.txt", ios::out);//定义输出文件"货物信息.txt"
-	if (!output)
+	ofstream out("GoodsInfo.dat", ios::out | ios::binary);//定义输出文件"GoodInfo信息.txt"
+	if (!out)
 	{
-		cerr << "打开文件<货物信息.txt>失败！！！" << endl;
+		cout << "打开文件<GoodsInfo.dat>失败！！！" << endl;
+		return;
 	}
 	p->HeadPrint();
-	output << "商品总量为: " << amount << "\n";
-	output << setiosflags(ios::left) << setw(10) << "编号" << setw(16) << "名称" << setw(10) << "生产厂家" << setw(10) << "价格" << setw(10) <<
-		"商品类别" << setw(10) << "数量" << setw(16) << "入库时间" << setw(10) << "保质期" << endl;
 	while (p->next != NULL)
 	{
 		p = p->next;
 		p->Goodprint();
 		//在文件中显示相应商品信息
-		output << setiosflags(ios::left) << setw(10) << p->code << setw(16) << p->name;
-		output << setw(10) << p->brand << setw(10) << p->price << setw(10) << p->type;
-		output << setw(10) << p->num << setw(4) << p->date.year << "/" << setw(2) << p->date.month << "/" << setw(2) << p->date.day;
-		output << setw(6) << "" << setw(10) << p->expiradate << endl;
+		out.write((char*)p, sizeof(Goods));
 	}
+	out.close();//关闭文件
 	cout << endl;
-	cout << "成功将货物信息保存到<货物信息.txt>" << endl;
+	cout << "成功将货物信息保存到<GoodsInfo.dat>" << endl;
 	cout << "……信息保存完毕……" << endl;
 	cout << "……按任意键返回主菜单……" << endl;
 	getchar();
 	getchar();
-	output.close();//关闭输出文件
 }
 
 void GoodsManage::ReadGoodsInfo()//读入商品信息
 {
-
+	ifstream in("GoodsInfo.dat", ios::in | ios::binary);
+	if (!in) {
+		return;//打开失败
+	}
+	Goods* temp = head;//临时指针
+	in.seekg(0, ios::beg);
+	while (in.peek() != EOF) {
+		Goods* real = new Goods;
+		in.read((char*)real, sizeof(Goods));
+		temp->next = real;
+		temp->next->Goodprint();
+		temp = temp->next;
+	}
+	temp->next = NULL;
+	in.close();//关闭文件
 }
 
 void GoodsManage::DateRemind()//输出商品过期日期
@@ -573,14 +579,14 @@ void GoodsManage::DateRemind()//输出商品过期日期
 	int value, flag = 0;
 	cin >> value;
 	cout << "以下产品保质期小于" << value << endl;
-	Goods* q = head->next;
-	while (q != NULL) {
+	Goods* q = head;
+	while (q->next != NULL) {
+		q = q->next;
 		if (q->expiradate <= value) {
 			if (flag == 0) { q->HeadPrint(); }
 			flag = 1;
 			q->Goodprint();
 		}
-		q = q->next;
 	}
 	cout << endl;
 	cout << "……保质期显示完毕……" << endl;
@@ -596,14 +602,14 @@ void GoodsManage::GoodsRemind()//库存提醒
 	int value, flag = 0;
 	cin >> value;
 	cout << "以下产品库存还有" << value << endl;
-	Goods* q = head->next;
-	while (q != NULL) {
+	Goods* q = head;
+	while (q->next != NULL) {
+		q = q->next;
 		if (q->num <= value) {
 			if (flag == 0) { q->HeadPrint(); }
 			flag = 1;
 			q->Goodprint();
 		}
-		q = q->next;
 	}
 	cout << endl;
 	cout << "……库存显示完毕……" << endl;
@@ -612,19 +618,19 @@ void GoodsManage::GoodsRemind()//库存提醒
 	getchar();
 }
 
-void GoodsManage::LowDateRemind()//保质期提醒
+void GoodsManage::LowDateRemind()//低保质期提醒
 {
 	system("cls");
 	int flag = 0;
 	cout << "以下产品保质期还有3日请及时换货！！！" << endl;
-	Goods* q = head->next;
-	while (q != NULL) {
+	Goods* q = head;
+	while (q->next != NULL) {
+		q = q->next;
 		if (q->expiradate <= 3) {
 			if (flag == 0) { q->HeadPrint(); }
 			flag = 1;
 			q->Goodprint();
 		}
-		q = q->next;
 	}
 	if (flag != 0) {
 		cout << endl;
@@ -633,20 +639,20 @@ void GoodsManage::LowDateRemind()//保质期提醒
 		Sleep(3000);
 	}
 }
-void GoodsManage::LowGoodsRemind()//库存提醒
+void GoodsManage::LowGoodsRemind()//低库存提醒
 {
 	//当库存低与10的时候就提醒，每一次查找后就提醒低库存
 	system("cls");
 	int flag = 0;
 	cout << "以下产品库存小于等于10请及时补充！！！" << endl;
-	Goods* q = head->next;
-	while (q != NULL) {
+	Goods* q = head;
+	while (q->next != NULL) {
+		q = q->next;
 		if (q->num <= 10) {
 			if (flag == 0) { q->HeadPrint(); }
 			flag = 1;
 			q->Goodprint();
 		}
-		q = q->next;
 	}
 	if (flag != 0) {
 		cout << endl;
